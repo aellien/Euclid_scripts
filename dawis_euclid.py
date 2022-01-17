@@ -4,7 +4,7 @@ import dawis
 
 indir = '/home/ellien/Euclid_ICL/simulations/out1'
 infile = 'ICL_V_bright.fits'
-outdir = '/home/ellien/Euclid_ICL/wavelets/out3'
+outdir = '/n03data/ellien/Euclid_ICL/wavelets/out3'
 n_cpus = 4 # Number of CPUs
 tau = 0.8   # Relative Threshold
 gamma = 0.2   # Attenuation (CLEAN) factor
