@@ -6,7 +6,7 @@
 #PSB -S /bin/bash
 
 module load intelpython/3-2020.4
-python /home/ellien/Euclid_ICL/scripts/dawis_euclid.py
+python /home/ellien/Euclid_ICL/Euclid_scripts/dawis_euclid.py
 
 
 exit 0
