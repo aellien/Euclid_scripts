@@ -6,11 +6,11 @@ indir = '/home/ellien/Euclid_ICL/simulations/out1'
 infile = 'ICL_V_bright.fits'
 outdir = '/n03data/ellien/Euclid_ICL/wavelets/out2'
 n_cpus = 4 # Number of CPUs
-tau = 0.1   # Relative Threshold
-gamma = 0.5   # Attenuation (CLEAN) factor
+tau = 0.5   # Relative Threshold
+gamma = 0.8   # Attenuation (CLEAN) factor
 ceps = 1E-5    # Convergence value for epsilon
 n_levels = 11    # Number of wavelet scales
-min_span = 2    # Minimum of wavelet scales spanned by an interscale tree (must be >= 1)
+min_span = 1    # Minimum of wavelet scales spanned by an interscale tree (must be >= 1)
 max_span = 3    # Maximum number of wavelet scales spanned by an interscale tree
 lvl_sep_big = 7     # Scale at wich mix_span & max_span are set to 1
 extent_sep = 0.1    # Ratio n_pix/vignet under which the Haar wavelet is used for restoration
