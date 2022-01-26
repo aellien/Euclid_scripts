@@ -1,6 +1,7 @@
 import os
 import dawis
-
+import sys
+import shutil
 
 indir = '/home/ellien/Euclid_ICL/simulations/out2'
 infile = 'cl2_ICL_Euclid.iptd.rebin.fits'
