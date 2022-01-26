@@ -12,7 +12,7 @@ gamma = 0.2   # Attenuation (CLEAN) factor
 ceps = 1E-4    # Convergence value for epsilon
 n_levels = 10    # Number of wavelet scales
 min_span = 1    # Minimum of wavelet scales spanned by an interscale tree (must be >= 1)
-max_span = 3    # Maximum number of wavelet scales spanned by an interscale tree
+max_span = 1    # Maximum number of wavelet scales spanned by an interscale tree
 lvl_sep_big = 7     # Scale at wich mix_span & max_span are set to 1
 extent_sep = 0.1    # Ratio n_pix/vignet under which the Haar wavelet is used for restoration
 lvl_sep_lin = 2     # Wavelet scale under which the Haar wavelet can be used for restoration
