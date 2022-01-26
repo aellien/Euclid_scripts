@@ -16,6 +16,7 @@ from astropy.visualization import ImageNormalize
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.colors import SymLogNorm
 from scipy.stats import sigmaclip
+from skimage.measure import label, regionprops
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 def sample_noise( im, n_sig_sa = 5, minval = -50, maxval = 100 ):
@@ -29,12 +30,39 @@ def sample_noise( im, n_sig_sa = 5, minval = -50, maxval = 100 ):
     return noise_pixels
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-def make_results( oim, oicl, ogal, path_wavelets, n_softhard_icl, n_hard_icl, rc, nf, xs, ys, n_levels ):
+def make_galaxy_catalog( oim, nf, n_levels, n_sig_gal = 50, level_gal = 3 ):
+
+    # path, list & variables
+    gal = np.zeros( (xs, ys) )
+
+    # Read atoms
+    nf = nf[:-4]
+    nfl = ''.join( (nf, 'ol.*') )
+    rimpath = os.path.join(path_wavelets, nfl)
+
+    sigma, mean, gain = d.pg_noise_bissection( oim, max_err = 1E-3, n_sigmas = 3 )
+    aim = d.anscombe_transform( oim, sigma, mean, gain )
+    acdc, awdc = d.bspl_atrous( aim, n_levels )
+    sdc = d.hard_threshold( awdc, n_sig_gal )
+    sup = sdc.array[:,:,level_gal]
+    lab = label( sup )
+    reg = regionprops( lab )
+
+    cat = []
+    for r in reg:
+        cat.append( [ r.centroid[1], r.centroid[0] ] )
+
+    return np.array(cat)
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+def make_results( oim, path_wavelets, cat, n_softhard_icl, n_hard_icl, rc, nf, xs, ys, n_levels ):
 
     # path, list & variables
     res = np.zeros( (xs, ys) )
-    icl = np.zeros( (xs, ys) )
-    gal = np.zeros( (xs, ys) )
+    icl1 = np.zeros( (xs, ys) )
+    gal1 = np.zeros( (xs, ys) )
+    icl2 = np.zeros( (xs, ys) )
+    gal2 = np.zeros( (xs, ys) )
     rim = np.zeros( (xs, ys) )
 
     rdc_array = np.zeros( (xs, ys, n_levels) )
@@ -42,10 +70,13 @@ def make_results( oim, oicl, ogal, path_wavelets, n_softhard_icl, n_hard_icl, rc
     xc = xs / 2.
     yc = ys / 2.
 
+    xc = xs / 2.
+    yc = ys / 2.
+
     # Read atoms
     nf = nf[:-4]
-    nf = ''.join( (nf, 'ol.*') )
-    rimpath = os.path.join(path_wavelets, nf)
+    nfl = ''.join( (nf, 'ol.*') )
+    rimpath = os.path.join(path_wavelets, nfl)
 
     for it in glob(rimpath):
 
@@ -56,24 +87,50 @@ def make_results( oim, oicl, ogal, path_wavelets, n_softhard_icl, n_hard_icl, rc
 
         for object in ol:
 
-
             x_min, y_min, x_max, y_max = object.bbox
             xco = x_min + ( x_max - x_min ) / 2
             yco = y_min + ( y_max - y_min ) / 2
 
-            rdc_array[ x_min : x_max, y_min : y_max, object.level ] += object.image * gamma
-
             if object.level >= n_softhard_icl:
 
-                if np.sqrt( ( xco - xc )**2 + ( yco - yc )**2 ) <= rc * object.level:
-                    icl[ x_min : x_max, y_min : y_max ] += object.image
-                else:
-                    gal[ x_min : x_max, y_min : y_max ] += object.image
-            else:
-                gal[ x_min : x_max, y_min : y_max ] += object.image * gamma
+                if object.level >= n_hard_icl:
 
-        #if itn > 211:
-        #    icl[ x_min : x_max, y_min : y_max ] += object.image * 0.8
+                    if np.sqrt( ( xco - 1800 )**2 + ( yco - 1800 )**2 ) <= 100 * object.level:
+
+                        icl1[ x_min : x_max, y_min : y_max ] += object.image * gamma
+                        icl2[ x_min : x_max, y_min : y_max ] += object.image * gamma
+
+                else:
+                    # galaxies
+                    flagg = False
+                    for pos in cat:
+                        if np.sqrt( ( xco - pos[1] )**2 + ( yco - pos[0] )**2 ) <= rc:
+                            gal1[ x_min : x_max, y_min : y_max ] += object.image * gamma
+                            flagg = True
+                            break
+
+                    if flagg == False:
+
+                        if np.sqrt( ( xco - 1800 )**2 + ( yco - 1800 )**2 ) <= 100 * object.level:
+
+                            icl1[ x_min : x_max, y_min : y_max ] += object.image * gamma
+
+            else:
+
+                if x_max - x_min >= 2**( n_hard_icl ) or y_max - y_min >= 2**( n_hard_icl ):
+                    # security
+                    if np.sqrt( ( xco - 1800 )**2 + ( yco - 1800 )**2 ) <= 100 * object.level:
+                        icl1[ x_min : x_max, y_min : y_max ] += object.image * gamma
+                        icl2[ x_min : x_max, y_min : y_max ] += object.image * gamma
+
+                else:
+                    gal2[ x_min : x_max, y_min : y_max ] += object.image * gamma
+                    gal1[ x_min : x_max, y_min : y_max ] += object.image * gamma
+
+
+
+            # all objects datacube
+            rdc_array[ x_min : x_max, y_min : y_max, object.level ] += object.image * gamma
 
     # Datacube
     rdc = d.datacube( rdc_array, dctype = 'NONE', fheader = header )
@@ -82,23 +139,38 @@ def make_results( oim, oicl, ogal, path_wavelets, n_softhard_icl, n_hard_icl, rc
 
     # write to fits
     hduo = fits.PrimaryHDU(res)
-    hduo.writeto(os.path.join( path_wavelets, 'results.residuals.fits'), overwrite = True )
+    hduo.writeto(os.path.join( path_wavelets, ''.join( ( nf, 'results.residuals.fits') )), overwrite = True )
 
-    hduo = fits.PrimaryHDU(icl)
-    hduo.writeto(os.path.join( path_wavelets, 'results.icl.fits'), overwrite = True )
+    hduo = fits.PrimaryHDU(icl1)
+    hduo.writeto(os.path.join( path_wavelets, ''.join( ( nf, 'results.icl.posgal.fits') )), overwrite = True )
 
-    hduo = fits.PrimaryHDU(gal)
-    hduo.writeto(os.path.join( path_wavelets, 'results.gal.fits'), overwrite = True )
+    hduo = fits.PrimaryHDU(gal1)
+    hduo.writeto(os.path.join( path_wavelets, ''.join( ( nf, 'results.gal.posgal.fits') )), overwrite = True )
+
+    hduo = fits.PrimaryHDU(icl2)
+    hduo.writeto(os.path.join( path_wavelets, ''.join( ( nf, 'results.icl.hardsep.fits') )), overwrite = True )
+
+    hduo = fits.PrimaryHDU(gal2)
+    hduo.writeto(os.path.join( path_wavelets, ''.join( ( nf, 'results.gal.hardsep.fits') )), overwrite = True )
 
     hduo = fits.PrimaryHDU(rim)
-    hduo.writeto(os.path.join( path_wavelets, 'results.rim.fits'), overwrite = True )
+    hduo.writeto(os.path.join( path_wavelets, ''.join( ( nf, 'results.rim.fits') )), overwrite = True )
 
-    return rdc, icl, gal, res, rim
+    rdc.to_fits( os.path.join( path_wavelets, ''.join( ( nf, 'results.rdc.fits') )), overwrite = True )
+
+    return rdc, icl1, gal1, icl2, gal2, res, rim
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Plots
 
 def plot_dawis_results( oim, oicl, ogal, rdc, icl, gal, res, rim, path_plots ):
+
+
+    # Matplotlib params
+    # mpl.rcParams['xtick.major.size'] = 0
+    # mpl.rcParams['ytick.major.size'] = 0
+    # mpl.rcParams['xtick.minor.size'] = 0
+    # mpl.rcParams['ytick.minor.size'] = 0
 
     fig = plt.figure()
     ax = fig.subplots(3, 3, sharex = True, sharey = True, \
@@ -274,11 +346,7 @@ def plot_dawis_results( oim, oicl, ogal, rdc, icl, gal, res, rim, path_plots ):
 
 if __name__ == '__main__':
 
-    # Matplotlib params
-    mpl.rcParams['xtick.major.size'] = 0
-    mpl.rcParams['ytick.major.size'] = 0
-    mpl.rcParams['xtick.minor.size'] = 0
-    mpl.rcParams['ytick.minor.size'] = 0
+
     #mpl.rcParams['xtick.labelbottom'] = False
     #mpl.rcParams['ytick.labelleft'] = False
 
@@ -286,12 +354,13 @@ if __name__ == '__main__':
     path_data = '/home/ellien/Euclid_ICL/simulations/out1'
     path_scripts = '/home/ellien/Euclid_ICL/scripts'
     path_plots = '/home/ellien/Euclid_ICL/plots/out1'
-    path_wavelets = '/home/ellien/Euclid_ICL/wavelets/out1/a'
+    path_wavelets = '/home/ellien/Euclid_ICL/wavelets/out1/d'
     gamma = 0.2
     n_levels = 11
     n_softhard_icl = 5
     n_hard_icl = 9
-    rc = 100 # pixels, distance to center to be classified as ICL
+    rc = 20 # pixels
+    ricl = 100 # pixels
     nf = 'ICL_V_bright.fits'
 
     # Read files
@@ -310,8 +379,9 @@ if __name__ == '__main__':
 
     xs, ys = oim.shape
 
-    rdc, icl, gal, res, rim = make_results( oim, oicl, ogal, path_wavelets, n_softhard_icl, n_hard_icl, rc, nf, xs, ys, n_levels )
-    nres = - ( res - res.mean() ) / res.mean()
+    cat = make_galaxy_catalog( oim, nf, n_levels, n_sig_gal = 50, level_gal = 3 )
+    rdc, icl1, gal1, icl2, gal2, res, rim = make_results( oim, path_wavelets, cat, n_softhard_icl, n_hard_icl, rc, nf, xs, ys, n_levels )
+    #nres = - ( res - res.mean() ) / res.mean()
 
     # residuals standard
     noise_pixels = sample_noise( res[np.where( oicl == np.inf )], minval = -10 )
@@ -321,10 +391,10 @@ if __name__ == '__main__':
     from plot_radial import *
     from skimage.measure import label
 
-    poicl = 11 * 10**( (oicl - 25 ) / -2.5 )
-    poicl, bins = convert_2D_to_1D(oicl, 3600, 100)
+    #poicl = 11 * 10**( (oicl - 25 ) / -2.5 )
+    poicl, bins = convert_2D_to_1D(oicl, 3600, 100, 'LOG10')
 
-    lo = oim - gal
+    lo = oim - gal1
     sup = np.zeros(np.shape(lo))
     sup[np.where(lo >= np.mean(noise_pixels) + 1.0 * np.std(noise_pixels) )] = 1.
     lab = label( sup )
@@ -332,15 +402,16 @@ if __name__ == '__main__':
     lo[ np.where(lab != labc )] = 0.
 
 
-    plo, bins = convert_2D_to_1D(lo, 3600, 100)
-    picl, bins = convert_2D_to_1D(icl, 3600, 100)
+    #plo, lbins = convert_2D_to_1D(lo, 3600, 10, 'LOG10')
+    picl, lbins = convert_2D_to_1D(icl1, 3600, 10, 'LOG10')
 
-    plot_dawis_results( oim, oicl, ogal, rdc, icl, gal, res, rim, path_plots )
+    plt.ion()
+    plot_dawis_results( oim, oicl, ogal, rdc, icl1, gal1, res, rim, path_plots )
 
     plt.figure()
     plt.plot( bins, poicl, linewidth = 2, color = 'k')
-    plt.plot( bins, - 2.5 * np.log10( picl / 11 )  +25,'r+')
-    plt.plot( bins, - 2.5 * np.log10( plo / 11 )   +25, 'b+')
+    plt.plot( lbins, - 2.5 * np.log10( picl / 12 )  + 25, 'r+' )
+    #plt.plot( bins, - 2.5 * np.log10( plo / 11 )   + 25, 'b+' )
     plt.xscale('log')
     plt.gca().invert_yaxis()
     plt.show()
