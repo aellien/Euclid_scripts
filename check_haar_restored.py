@@ -36,6 +36,7 @@ if __name__ == '__main__':
 
     # read pkl
     for i in range(1, n_it + 1):
+        print('it %d' %i)
         wdc, ldc, rl, itl, ol = d.load_iteration(i, pf )
         for o in ol:
             if o.filter == 'HAAR':
