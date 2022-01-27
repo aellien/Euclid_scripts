@@ -38,8 +38,9 @@ if __name__ == '__main__':
     for i in range(1, n_it + 1):
         wdc, ldc, rl, itl, ol = d.load_iteration(i, pf )
         for o in ol:
-            x_min, y_min, x_max, y_max = o.bbox
-            hr[ x_min : x_max, y_min : y_max ] += o.image
+            if o.filter == 'HAAR':
+                x_min, y_min, x_max, y_max = o.bbox
+                hr[ x_min : x_max, y_min : y_max ] += o.image
 
     hduo = fits.PrimaryHDU( hr )
     hduo.writeto( os.path.join( path_wavelets, 'cl2_ICL_Euclid.iptd.rebin.haar.fits' ), overwrite = True )
