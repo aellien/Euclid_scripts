@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     # read pkl
     for i in range(1, n_it + 1):
-        wdc, ldc, rl, itl, ol = d.load_iteration(i, )
+        wdc, ldc, rl, itl, ol = d.load_iteration(i, pf )
         for o in ol:
             x_min, y_min, x_max, y_max = o.bbox
             hr[ x_min : x_max, y_min : y_max ] += o.image
