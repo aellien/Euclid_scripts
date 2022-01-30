@@ -2,7 +2,7 @@
 #PBS -o /home/ellien/Euclid_ICL/logs/icl_euclid.out
 #PBS -j oe
 #PBS -N icl_euclid
-#PBS -l nodes=n01:ppn=6,walltime=120:00:00
+#PBS -l nodes=n01:ppn=10,walltime=120:00:00
 #PSB -S /bin/bash
 
 module load intelpython/3-2020.4
