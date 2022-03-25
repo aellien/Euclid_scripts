@@ -16,6 +16,7 @@ from skimage.measure import regionprops, label
 def sample_noise( im, n_sig_sa = 5, minval = -50, maxval = 100 ):
     '''Return array with noise values obtained from sigma clip.
     '''
+    print('Sampling noise')
     pixels = im[np.where( (im > minval) & (im < maxval) )]
     noise_pixels = sigmaclip( pixels, low = n_sig_sa, high = n_sig_sa )[0]
     mean = np.mean(noise_pixels)
@@ -23,20 +24,27 @@ def sample_noise( im, n_sig_sa = 5, minval = -50, maxval = 100 ):
     noise_pixels = np.append( noise_pixels, noise_pixels + 2 * ( mean - noise_pixels ) )
     return noise_pixels
 
-def inpaint_zero_areas(im, n = 4, radius = 4):
+def inpaint_zero_areas(im, star_masks, n = 4, radius = 4):
     '''Inpaint areas of zeros with gaussian noise
     '''
     image_result = np.copy(im)
     masks = np.zeros(image_result.shape)
     masks[image_result == 0] = 1.
+    masks[np.where(star_masks == 1)] = 0.
+    print('Making labels')
     masks = label(masks, connectivity = 2)
+    print('%d regions'%masks.max())
+    print('Iterate over labels')
 
     for i in range( 1, masks.max() + 1 ):
+        #import pdb;pdb.set_trace()
         lpx = np.size(masks[np.where(masks == i)])
+        print('num %d'%i)
         if lpx < n:
             masks[np.where(masks == i)] = 0.
 
     masks[masks > 0.] = 1
+    print('Binary dilation')
     masks = binary_dilation( masks, disk( radius, dtype = bool ) )
     noise_pixels = sample_noise( image_result[np.where(masks == False)] )
     r = np.random.normal( loc = np.mean(noise_pixels), scale = np.std(noise_pixels), size = im.shape )
@@ -121,12 +129,12 @@ def inpaint_euclid_sim( oim, star_pos, mask_val = -10 ):
     masks[im <= mask_val] = 1.
     star_masks = masks * star_pos
 
-    for i in range(3):
+    #for i in range(2):
 
-        print(np.size(np.where(star_masks == 1.)[0]))
-        im = inpaint_star_masks( im, mask = star_masks, radius = 1 )
+    #    print(np.size(np.where(star_masks == 1.)[0]))
+    #    im = inpaint_star_masks( im, mask = star_masks, radius = 1 )
 
-    print(np.size(np.where(star_masks == 1.)[0]))
+    #print(np.size(np.where(star_masks == 1.)[0]))
 
     #fig, ax = plt.subplots(1, 2)
     #ax[0].imshow(im,  norm = ImageNormalize( im, \
@@ -137,7 +145,7 @@ def inpaint_euclid_sim( oim, star_pos, mask_val = -10 ):
     #ax[1].imshow(star_masks, origin = 'lower', cmap = 'binary' )
     #plt.show()
 
-    im, masks = inpaint_zero_areas(im)
+    im, masks = inpaint_zero_areas(im, star_masks)
     masks_stacks = masks - star_masks
 
     return im
@@ -158,18 +166,18 @@ if __name__ == '__main__':
     from astropy.visualization import ImageNormalize
 
     # paths
-    path_clusters = '/home/ellien/Euclid_ICL/simulations/out2'
-    path_inpainted = '/home/ellien/Euclid_ICL/simulations/out2'
-    path_star_pos = '/home/ellien/Euclid_ICL/simulations/out2'
+    path_clusters = '/home/ellien/Euclid_ICL/simulations/out3'
+    path_inpainted = '/home/ellien/Euclid_ICL/simulations/out3'
+    path_star_pos = '/home/ellien/Euclid_ICL/simulations/out3'
 
-    for cluster in glob.glob( os.path.join( path_clusters, '*Euclid.fits' ) ):
+    for cluster in glob.glob( os.path.join( path_clusters, 'Challenge?_Euclid?.fits' ) ):
 
         # filenames
         fn = cluster.split('/')[-1]
         cn = fn[:-5]
         print(cn)
 
-        rn = ''.join((cn, '_star_masks.reg'))
+        rn = 'star_masks.reg'
         rp = os.path.join( path_star_pos, rn )
 
         # read file

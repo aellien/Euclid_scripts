@@ -17,7 +17,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.colors import SymLogNorm
 from scipy.stats import sigmaclip
 from skimage.measure import label, regionprops
-from force_monomodality import force_monomodality
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 def sample_noise( im, n_sig_sa = 5, minval = -50, maxval = 100 ):
@@ -56,7 +55,7 @@ def make_galaxy_catalog( oim, nf, n_levels, n_sig_gal = 50, level_gal = 3 ):
     return np.array(cat)
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-def make_results( oim, path_wavelets, cat, n_softhard_icl, n_hard_icl, n_max_icl, rc, ricl, nf, xs, ys, n_levels ):
+def make_results( oim, path_wavelets, cat, n_softhard_icl, n_hard_icl, rc, nf, xs, ys, n_levels ):
 
     # path, list & variables
     res = np.zeros( (xs, ys) )
@@ -67,6 +66,9 @@ def make_results( oim, path_wavelets, cat, n_softhard_icl, n_hard_icl, n_max_icl
     rim = np.zeros( (xs, ys) )
 
     rdc_array = np.zeros( (xs, ys, n_levels) )
+
+    xc = xs / 2.
+    yc = ys / 2.
 
     xc = xs / 2.
     yc = ys / 2.
@@ -91,12 +93,13 @@ def make_results( oim, path_wavelets, cat, n_softhard_icl, n_hard_icl, n_max_icl
 
             if object.level >= n_softhard_icl:
 
-                if ( object.level >= n_hard_icl ) & ( object.level < n_max_icl ):
+                if object.level >= n_hard_icl:
 
-                    if np.sqrt( ( xco - xc )**2 + ( yco - yc )**2 ) <= ricl * object.level:
+                    if np.sqrt( ( xco - 1800 )**2 + ( yco - 1800 )**2 ) <= 100 * object.level:
 
-                        icl2[ x_min : x_max, y_min : y_max ] += object.image * gamma
                         icl1[ x_min : x_max, y_min : y_max ] += object.image * gamma
+                        icl2[ x_min : x_max, y_min : y_max ] += object.image * gamma
+
                 else:
                     # galaxies
                     flagg = False
@@ -108,21 +111,19 @@ def make_results( oim, path_wavelets, cat, n_softhard_icl, n_hard_icl, n_max_icl
 
                     if flagg == False:
 
-                        if np.sqrt( ( xco - xc )**2 + ( yco - yc )**2 ) <= ricl * object.level:
+                        if np.sqrt( ( xco - 1800 )**2 + ( yco - 1800 )**2 ) <= 100 * object.level:
 
                             icl1[ x_min : x_max, y_min : y_max ] += object.image * gamma
 
             else:
 
-                if x_max - x_min >= 2**( n_hard_icl + 2 ) or y_max - y_min >= 2**( n_hard_icl + 2 ):
-
-                        # security
-                        if ( np.sqrt( ( xco - xc )**2 + ( yco - yc )**2 ) <= ricl * object.level ) & ( object.level < n_max_icl ):
-                            icl1[ x_min : x_max, y_min : y_max ] += object.image * gamma
-                            icl2[ x_min : x_max, y_min : y_max ] += object.image * gamma
+                if x_max - x_min >= 2**( n_hard_icl ) or y_max - y_min >= 2**( n_hard_icl ):
+                    # security
+                    if np.sqrt( ( xco - 1800 )**2 + ( yco - 1800 )**2 ) <= 100 * object.level:
+                        icl1[ x_min : x_max, y_min : y_max ] += object.image * gamma
+                        icl2[ x_min : x_max, y_min : y_max ] += object.image * gamma
 
                 else:
-
                     gal2[ x_min : x_max, y_min : y_max ] += object.image * gamma
                     gal1[ x_min : x_max, y_min : y_max ] += object.image * gamma
 
@@ -350,25 +351,67 @@ if __name__ == '__main__':
     #mpl.rcParams['ytick.labelleft'] = False
 
     # Paths, lists & variables
-    path_data = '/home/ellien/Euclid_ICL/simulations/out2'
+    path_data = '/home/ellien/Euclid_ICL/simulations/out1'
     path_scripts = '/home/ellien/Euclid_ICL/scripts'
-    path_plots = '/home/ellien/Euclid_ICL/plots/out2'
-    path_wavelets = '/home/ellien/Euclid_ICL/wavelets/out2/run3'
+    path_plots = '/home/ellien/Euclid_ICL/plots/out1'
+    path_wavelets = '/home/ellien/Euclid_ICL/wavelets/out1/d'
     gamma = 0.2
-    n_levels = 10
+    n_levels = 11
     n_softhard_icl = 5
-    n_hard_icl = 6
-    n_max_icl = 8
-    rc = 10 # pixels
-    ricl = 20 # pixels
-    nf = 'cl2_ICL_Euclid.iptd.rebin.fits'
+    n_hard_icl = 9
+    rc = 20 # pixels
+    ricl = 100 # pixels
+    nf = 'ICL_V_bright.fits'
 
     # Read files
     oimfile = os.path.join( path_data, nf )
     hdu = fits.open(oimfile)
     header = hdu[0].header
     oim = hdu[0].data
+
+    oiclfile = os.path.join( path_data, 'ICL_clean_mag_bright.fits' )
+    hdu = fits.open(oiclfile)
+    oicl = hdu[0].data
+
+    ogalfile = os.path.join( path_data, 'No_ICL_image_V.fits' )
+    hdu = fits.open(ogalfile)
+    ogal = hdu[0].data
+
     xs, ys = oim.shape
 
     cat = make_galaxy_catalog( oim, nf, n_levels, n_sig_gal = 50, level_gal = 3 )
-    rdc, icl1, gal1, icl2, gal2, res, rim = make_results( oim, path_wavelets, cat, n_softhard_icl, n_hard_icl, n_max_icl, rc, ricl, nf, xs, ys, n_levels )
+    rdc, icl1, gal1, icl2, gal2, res, rim = make_results( oim, path_wavelets, cat, n_softhard_icl, n_hard_icl, rc, nf, xs, ys, n_levels )
+    #nres = - ( res - res.mean() ) / res.mean()
+
+    # residuals standard
+    noise_pixels = sample_noise( res[np.where( oicl == np.inf )], minval = -10 )
+    #fig, ax = plt.subplots(1)
+    #ax.hist(res[res < np.max(noise_pixels)].flatten(), bins = 'auto',  histtype = 'bar', rwidth = 10. , align='left')
+
+    from plot_radial import *
+    from skimage.measure import label
+
+    #poicl = 11 * 10**( (oicl - 25 ) / -2.5 )
+    poicl, bins = convert_2D_to_1D(oicl, 3600, 100, 'LOG10')
+
+    lo = oim - gal1
+    sup = np.zeros(np.shape(lo))
+    sup[np.where(lo >= np.mean(noise_pixels) + 1.0 * np.std(noise_pixels) )] = 1.
+    lab = label( sup )
+    labc = lab[1801, 1800]
+    lo[ np.where(lab != labc )] = 0.
+
+
+    #plo, lbins = convert_2D_to_1D(lo, 3600, 10, 'LOG10')
+    picl, lbins = convert_2D_to_1D(icl1, 3600, 10, 'LOG10')
+
+    plt.ion()
+    plot_dawis_results( oim, oicl, ogal, rdc, icl1, gal1, res, rim, path_plots )
+
+    plt.figure()
+    plt.plot( bins, poicl, linewidth = 2, color = 'k')
+    plt.plot( lbins, - 2.5 * np.log10( picl / 11 )  + 25, 'r+' )
+    #plt.plot( bins, - 2.5 * np.log10( plo / 11 )   + 25, 'b+' )
+    plt.xscale('log')
+    plt.gca().invert_yaxis()
+    plt.show()

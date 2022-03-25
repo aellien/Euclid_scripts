@@ -40,6 +40,7 @@ if __name__ == '__main__':
         wdc, ldc, rl, itl, ol = d.load_iteration(i, pf )
         for o in ol:
             if o.filter == 'HAAR':
+
                 x_min, y_min, x_max, y_max = o.bbox
                 hr[ x_min : x_max, y_min : y_max ] += o.image
 

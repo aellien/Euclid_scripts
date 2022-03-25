@@ -18,7 +18,7 @@ def rebin_fits(FILENAME,XBIN=2,YBIN=2):
     xedge = np.shape(im)[0]%XBIN
     yedge = np.shape(im)[1]%YBIN
     im = im[xedge:,yedge:]
-    binim = np.reshape(im,(int(np.shape(im)[0]/XBIN),XBIN,int(np.shape(im)[1]/YBIN),YBIN)) 
+    binim = np.reshape(im,(int(np.shape(im)[0]/XBIN),XBIN,int(np.shape(im)[1]/YBIN),YBIN))
     binim = np.mean(binim,axis=3)
     binim = np.mean(binim,axis=1)
 
@@ -35,6 +35,29 @@ def rebin_fits(FILENAME,XBIN=2,YBIN=2):
         newheader['CD2_1'] = oldheader['CD2_1']*float(YBIN)
     except:
         pass
-    
+
     hdu = fits.PrimaryHDU(binim,header=newheader)
     hdu.writeto(FILENAME[:-4]+'rebin.fits',overwrite=True)
+
+if __name__ == '__main__':
+
+    import glob as glob
+    import os as os
+    import sys as sys
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from astropy.io import fits
+
+    # paths
+    path_clusters = '/home/ellien/Euclid_ICL/simulations/out3'
+    path_inpainted = '/home/ellien/Euclid_ICL/simulations/out3'
+    path_star_pos = '/home/ellien/Euclid_ICL/simulations/out3'
+
+    for cluster in glob.glob( os.path.join( path_clusters, 'Challenge?_Euclid?.iptd.fits' ) ):
+
+        # filenames
+        fn = cluster.split('/')[-1]
+        cn = fn[:-5]
+        print(cn)
+
+        rebin_fits( cluster, XBIN = 8, YBIN = 8)
