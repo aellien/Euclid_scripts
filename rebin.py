@@ -60,4 +60,4 @@ if __name__ == '__main__':
         cn = fn[:-5]
         print(cn)
 
-        rebin_fits( cluster, XBIN = 8, YBIN = 8)
+        rebin_fits( cluster, XBIN = 4, YBIN = 4)
