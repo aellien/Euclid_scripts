@@ -23,6 +23,7 @@ starting_level = 2 # Starting wavelet scale (this is the third scale - Python co
 conditions = 'prolongation'
 monomodality = True
 resume = True
+rm_gamma_for_big = True
 
 shutil.copyfile( os.path.abspath(__file__), os.path.join( outdir, infile[:-4] + 'input.dawis.py' ) )
 
