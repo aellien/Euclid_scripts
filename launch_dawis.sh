@@ -6,5 +6,5 @@ do
       echo "Launch Dawis on file ${file}"
       n=$(basename "$file")
       echo $n
-      echo "qsub qsub_dawis.sh -v ncl=${n:3:6},nf=${file}"
+      echo "qsub qsub_dawis.sh -v ncl=${n:3:3},nf=${file}"
 done
