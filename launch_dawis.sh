@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for file in /n03data/ellien/Euclid_ICL/simulations/out4/*crop.fits
+for file in /n03data/ellien/Euclid_ICL/simulations/out4/*
 
 do
       echo "Launch Dawis on file ${file}"
