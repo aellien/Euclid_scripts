@@ -13,7 +13,7 @@ ceps = 1E-4    # Convergence value for epsilon
 n_levels = 10    # Number of wavelet scales
 min_span = 1    # Minimum of wavelet scales spanned by an interscale tree (must be >= 1)
 max_span = 2    # Maximum number of wavelet scales spanned by an interscale tree
-lvl_sep_big = 6     # Scale at wich mix_span, max_span & gamma are set to 1, and monomodality is enforced
+lvl_sep_big = 4     # Scale at wich mix_span, max_span & gamma are set to 1, and monomodality is enforced
 extent_sep = 0.15   # Ratio n_pix/vignet under which the Haar wavelet is used for restoration
 ecc_sep = 0.9      # Eccentricity threshold over which the Haar wavelet is used for restoration
 lvl_sep_lin = 3     # Wavelet scale under which the Haar wavelet can be used for restoration
