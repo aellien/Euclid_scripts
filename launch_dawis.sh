@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for file in /n03data/ellien/Euclid_ICL/simulations/out5/swarped*
+for file in /n03data/ellien/Euclid_ICL/simulations/out5/noise*
 
 do
       echo "Launch Dawis on file ${file}"
