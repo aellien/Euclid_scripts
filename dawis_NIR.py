@@ -26,8 +26,8 @@ monomodality = True
 resume = True
 rm_gamma_for_big = True
 
-if os.path.isdir( indir ) == False:
-    os.makedirs( indir, exist_ok = True )
+if os.path.isdir( outdir ) == False:
+    os.makedirs( outdir, exist_ok = True )
 shutil.copyfile( os.path.abspath(__file__), os.path.join( outdir, infile[:-4] + 'input.dawis.py' ) )
 
 dawis.synthesis_by_analysis( indir = indir, infile = infile, outdir = outdir, n_cpus = n_cpus, n_levels = n_levels, \
