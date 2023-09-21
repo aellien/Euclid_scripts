@@ -5,11 +5,11 @@ import shutil
 
 indir = '/n03data/ellien/Euclid_ICL/simulations/out6'
 infile = sys.argv[1]
-outdir = '/n03data/ellien/Euclid_ICL/wavelets/out6/run6'
+outdir = '/n03data/ellien/Euclid_ICL/wavelets/out6/run7'
 n_cpus = 4 # Number of CPUs
 tau = 0.1   # Relative Threshold
 gamma = 0.2   # Attenuation (CLEAN) factor
-ceps = 1E-5    # Convergence value for epsilon
+ceps = 1E-4    # Convergence value for epsilon
 n_levels = 12    # Number of wavelet scales
 min_span = 1    # Minimum of wavelet scales spanned by an interscale tree (must be >= 1)
 max_span = 2    # Maximum number of wavelet scales spanned by an interscale tree
