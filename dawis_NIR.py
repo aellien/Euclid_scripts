@@ -6,7 +6,7 @@ import shutil
 indir = '/n03data/ellien/Euclid_ICL/simulations/out6'
 infile = sys.argv[1]
 outdir = '/n03data/ellien/Euclid_ICL/wavelets/out6/run6'
-n_cpus = 12 # Number of CPUs
+n_cpus = 4 # Number of CPUs
 tau = 0.1   # Relative Threshold
 gamma = 0.2   # Attenuation (CLEAN) factor
 ceps = 1E-5    # Convergence value for epsilon
