@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for file in /n03data/ellien/Euclid_ICL/simulations/out6/EUC*crop*
+for file in /n03data/ellien/Euclid_ICL/simulations/out6/NIR*bgsub*
 
 do
       echo "Launch Dawis on file ${file}"

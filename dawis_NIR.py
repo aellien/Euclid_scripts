@@ -5,12 +5,13 @@ import shutil
 
 indir = '/n03data/ellien/Euclid_ICL/simulations/out6'
 infile = sys.argv[1]
-outdir = '/n03data/ellien/Euclid_ICL/wavelets/out6/run10'
+outdir = '/n03data/ellien/Euclid_ICL/wavelets/out6/run11'
 n_cpus = 4 # Number of CPUs
-n_sigmas = 5
+n_sigmas = 3
 tau = 0.5   # Relative Threshold
 gamma = 0.2   # Attenuation (CLEAN) factor
-ceps = 1E-5    # Convergence value for epsilon
+ceps = 1E-4    # Convergence value for epsilon
+scale_lvl_eps = 3 # Scaling factor for convergence with wavelet scale
 n_levels = 10    # Number of wavelet scales
 min_span = 1    # Minimum of wavelet scales spanned by an interscale tree (must be >= 1)
 max_span = 2    # Maximum number of wavelet scales spanned by an interscale tree
@@ -32,7 +33,7 @@ if os.path.isdir( outdir ) == False:
 shutil.copyfile( os.path.abspath(__file__), os.path.join( outdir, infile[:-4] + 'input.dawis.py' ) )
 
 dawis.synthesis_by_analysis( indir = indir, infile = infile, outdir = outdir, n_cpus = n_cpus, n_levels = n_levels, n_sigmas = n_sigmas, \
-                                    tau = tau, gamma = gamma, ceps = ceps, conditions = conditions, min_span = min_span, \
+                                    tau = tau, gamma = gamma, ceps = ceps, scale_lvl_eps = scale_lvl_eps, conditions = conditions, min_span = min_span, \
                                     max_span = max_span, lvl_sep_big = lvl_sep_big, monomodality = monomodality, \
                                     max_iter = max_iter, extent_sep = extent_sep, ecc_sep = ecc_sep, rm_gamma_for_big = rm_gamma_for_big, \
                                     data_dump = data_dump, gif = gif, resume = resume )
