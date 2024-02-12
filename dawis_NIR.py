@@ -3,11 +3,11 @@ import dawis
 import sys
 import shutil
 
-indir = '/n03data/ellien/Euclid_ICL/simulations/out6'
+indir = '/n03data/ellien/Euclid_ICL/simulations/out1/54000066009352'
 infile = sys.argv[1]
-outdir = '/n03data/ellien/Euclid_ICL/wavelets/out6/run11'
-n_cpus = 4 # Number of CPUs
-n_sigmas = 3
+outdir = '/n03data/ellien/Euclid_ICL/wavelets/out1/run1'
+n_cpus = 1 # Number of CPUs
+n_sigmas = 5
 tau = 0.5   # Relative Threshold
 gamma = 0.2   # Attenuation (CLEAN) factor
 ceps = 1E-4    # Convergence value for epsilon
