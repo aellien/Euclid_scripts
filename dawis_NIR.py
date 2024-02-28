@@ -5,7 +5,7 @@ import shutil
 
 indir = '/n03data/ellien/Euclid_ICL/simulations/out1/54000066009352'
 infile = sys.argv[1]
-outdir = '/n03data/ellien/Euclid_ICL/wavelets/out1/run1'
+outdir = '/n03data/ellien/Euclid_ICL/wavelets/out1/run2'
 n_cpus = 1 # Number of CPUs
 n_sigmas = 5
 tau = 0.5   # Relative Threshold
@@ -27,6 +27,9 @@ conditions = 'prolongation'
 monomodality = True
 resume = True
 rm_gamma_for_big = False
+
+if os.path.isdir( outdir ) == False:
+    os.makedirs( outdir, exist_ok = True )
 
 if os.path.isdir( outdir ) == False:
     os.makedirs( outdir, exist_ok = True )
