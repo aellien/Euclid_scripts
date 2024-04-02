@@ -9,6 +9,7 @@ import os as os
 import glob as glob
 import dawis as d
 import numpy as np
+import pandas as pd
 from astropy.io import fits
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -59,13 +60,13 @@ if __name__ == '__main__':
     # Paths, lists & variables
     path_data = '/n03data/ellien/Euclid_ICL/simulations/out1/54000066009352'
     path_wavelets = '/n03data/ellien/Euclid_ICL/wavelets/out1/run3'
-    path_analysis = '/n03data/ellien/Euclid_ICL/analysis/54000066009352/out1/run3
+    path_analysis = '/n03data/ellien/Euclid_ICL/analysis/54000066009352/out1/run3'
     
     n_lvl = 10
     lvl_sep = 5
     dist_sep = 50 # pix
     
-    for nfp in glob.glob( os.path.join(path_data, '*.fits') ):
+    '''for nfp in glob.glob( os.path.join(path_data, '*.fits') ):
                 
         hdu = fits.open(nfp)
         head = hdu[0].header
@@ -90,4 +91,17 @@ if __name__ == '__main__':
                 
         print(nf, np.sum(icl))        
         hduo = fits.PrimaryHDU(icl, header = head)
-        hduo.writeto(os.path.join(path_analysis, nf+'.icl.fits'))
+        hduo.writeto(os.path.join(path_analysis, nf+'.icl.fits'))'''
+
+    path_analysis = '/home/aellien/Euclid_ICL/analysis/out1/run3'
+
+    df = pd.DataFrame([])        
+    for z in [ '0.3', '0.6', '0.9', '1.2', '1.5', '1.8' ]:
+        col = []
+        for num_vignet in range(1, 9):
+            icl = fits.getdata(os.path.join(path_analysis, 'z_%s_vignet_%d.icl.fits'%(z, num_vignet)))
+            Ficl = np.sum(icl)
+            col.append(Ficl)
+        df[z] = col
+        
+    df.to_csv(os.path.join(path_analysis, 'Euclid_simulations_icl_fluxes.csv'))

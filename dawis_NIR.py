@@ -3,9 +3,9 @@ import dawis
 import sys
 import shutil
 
-indir = '/n03data/ellien/Euclid_ICL/simulations/out1/54000066009352'
-infile = sys.argv[1]
-outdir = '/n03data/ellien/Euclid_ICL/wavelets/out1/run3'
+indir = sys.argv[1]
+infile = sys.argv[2]
+outdir = sys.argv[3]
 
 if os.path.isdir( outdir ) == False:
     os.makedirs( outdir, exist_ok = True )

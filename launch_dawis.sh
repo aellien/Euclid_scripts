@@ -1,12 +1,13 @@
 #!/bin/bash
 
-for cluster_num in 54000066009352
+for cluster_num in 365000132000018 360009933000018 373000139000019
 do
-    for file in /n03data/ellien/Euclid_ICL/simulations/out1/${cluster_num}/*
+    for file in /n03data/ellien/Euclid_ICL/simulations/out2/${cluster_num}/*
     do
       echo "Launch Dawis on file ${file}"
       n=$(basename "$file")
-      ncl=${num_cluster}_${n:0:-5}
-      qsub qsub_dawis.sh -v ncl=${ncl},nf=${n}
+      ncl=${cluster_num}_${n:0:-5}
+      outdir=/n03data/ellien/Euclid_ICL/wavelets/out2/${cluster_num}
+      qsub qsub_dawis.sh -v ncl=${ncl},nf=${n},indir=${file},outdir=${outdir}
       done
 done
