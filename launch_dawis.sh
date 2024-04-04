@@ -11,12 +11,13 @@ do
       indir=/n03data/ellien/Euclid_ICL/simulations/out2/${cluster_num}/
       outdir=/n03data/ellien/Euclid_ICL/wavelets/out2/${cluster_num}
       qsub qsub_dawis.sh -v ncl=${ncl},nf=${n},indir=${indir},outdir=${outdir}
-      if njobs -gt 50
+      
+      if [[ ${njobs} -gt 24 ]]
       then
           break
       fi
    done
-   if njobs -gt 24
+   if [[ ${njobs} -gt 24 ]]
    then
        break
    fi

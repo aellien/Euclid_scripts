@@ -10,8 +10,17 @@ conda init bash
 source /home/ellien/.bashrc
 conda activate dawis
 
+ncpus=1
+
+export OMP_NUM_THREADS=${ncpus}
+export OPENBLAS_NUM_THREADS=${ncpus} 
+export MKL_NUM_THREADS=${ncpus}
+export VECLIB_MAXIMUM_THREADS=${ncpus}
+export NUMEXPR_NUM_THREADS=${ncpus}
+
 echo ${ncl}
 echo ${nf}
+
 python /home/ellien/Euclid_ICL/Euclid_scripts/dawis_NIR.py ${indir} ${nf} ${outdir}
 
 exit 0
