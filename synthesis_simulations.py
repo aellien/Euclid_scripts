@@ -107,7 +107,7 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
             # BCG
             if mscbcg[xco, yco] == 1:
                 icl[ x_min : x_max, y_min : y_max ] += o.image
-                icl_err[ x_min : x_max, y_min : y_max ] += o.det_err_image
+                #icl_err[ x_min : x_max, y_min : y_max ] += o.det_err_image
                 icl_al.append([o, xco, yco])
 
             # ICL
@@ -116,7 +116,7 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
                 if (o.level >= lvl_sep) & (sx >= size_sep_pix) & (sy >= size_sep_pix):
 
                     icl[ x_min : x_max, y_min : y_max ] += o.image
-                    icl_err[ x_min : x_max, y_min : y_max ] += o.det_err_image
+                    #icl_err[ x_min : x_max, y_min : y_max ] += o.det_err_image
                     icl_al.append([o, xco, yco])
                     
                 else:
@@ -129,7 +129,7 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
             noticl_al.append([ o, xco, yco ])
 
     if write_fits == True:
-        print('\nWS + SF + SS -- ICL+BCG -- write fits as %s*'%(nfp))
+        print('\nWS + SF + SS -- ICL+BCG -- write fits as %s*'%(nfap))
 
         # write to fits
         hduo = fits.PrimaryHDU(icl)
