@@ -69,7 +69,7 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
     '''
     # path, list & variables
     icl = np.zeros( (xs, ys) )
-    gal = np.zeros( (xs, ys) )
+    icl_err = np.zeros( (xs, ys) )
     im_art = np.zeros( (xs, ys) )
     im_unclass = np.zeros( (xs, ys) )
 
@@ -107,6 +107,7 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
             # BCG
             if mscbcg[xco, yco] == 1:
                 icl[ x_min : x_max, y_min : y_max ] += o.image
+                icl_err[ x_min : x_max, y_min : y_max ] += o.det_err_image
                 icl_al.append([o, xco, yco])
 
             # ICL
@@ -115,13 +116,16 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
                 if (o.level >= lvl_sep) & (sx >= size_sep_pix) & (sy >= size_sep_pix):
 
                     icl[ x_min : x_max, y_min : y_max ] += o.image
+                    icl_err[ x_min : x_max, y_min : y_max ] += o.det_err_image
                     icl_al.append([o, xco, yco])
                     
                 else:
                     #gal[ x_min : x_max, y_min : y_max ] += o.image
+                    im_unclass[ x_min : x_max, y_min : y_max ] += o.image
                     noticl_al.append([o, xco, yco])
 
         else:
+            im_unclass[ x_min : x_max, y_min : y_max ] += o.image
             noticl_al.append([ o, xco, yco ])
 
     if write_fits == True:
@@ -136,14 +140,14 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
 
         interval = AsymmetricPercentileInterval(5, 99.5) # meilleur rendu que MinMax or ZScale pour images reconstruites
         fig, ax = plt.subplots(2, 2)
-        poim = ax[0][0].imshow(gal, norm = ImageNormalize( gal, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
+        poim = ax[0][0].imshow(icl_err, norm = ImageNormalize( icl_err, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
         poim = ax[1][0].imshow(icl, norm = ImageNormalize( icl, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
-        poim = ax[0][1].imshow(im_unclass, norm = ImageNormalize( gal, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
-        poim = ax[1][1].imshow(im_art, norm = ImageNormalize( gal, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
+        poim = ax[0][1].imshow(im_unclass, norm = ImageNormalize( im_unclass, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
+        poim = ax[1][1].imshow(im_art, norm = ImageNormalize( im_unclass, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
 
         #plt.show()
         plt.tight_layout()
-        plt.savefig( nfap + 'results.bcgwavsizesepmask_%03d_%03d.png'%(lvl_sep, size_sep), format = 'png' )
+        plt.savefig( nfap + '.results.bcgwavsizesepmask_%03d_%03d.png'%(lvl_sep, size_sep), format = 'png' )
         print('Write vignet to' + nfap + 'synth.bcgwavsizesepmask_%03d_%03d_testspur.png'%(lvl_sep, size_sep))
         plt.close('all')
 
@@ -194,7 +198,7 @@ if __name__ == '__main__':
     lvl_sep_max = 1000
     lvl_sep_bcg = 1000
     dist_sep = 50 # pix
-    size_sep_pix = 100 # pix
+    size_sep_pix = 10 # pix
     size_sep = size_sep_pix # NOT kpc for now
     
     H0 = 70.0 # Hubble constant
