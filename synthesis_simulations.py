@@ -70,7 +70,7 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
     # path, list & variables
     icl = np.zeros( (xs, ys) )
     icl_err = np.zeros( (xs, ys) )
-    im_art = np.zeros( (xs, ys) )
+    recim = np.zeros( (xs, ys) )
     im_unclass = np.zeros( (xs, ys) )
 
     icl_al = []
@@ -90,6 +90,8 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
         itm = itl[j].interscale_maximum
         xco = itm.x_max
         yco = itm.y_max
+        
+        recim[ x_min : x_max, y_min : y_max ] += o.image
 
         if kurt_filt == True:
             k = kurtosis(o.image.flatten(), fisher=True)
@@ -142,8 +144,8 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
         fig, ax = plt.subplots(2, 2)
         poim = ax[0][0].imshow(icl_err, norm = ImageNormalize( icl_err, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
         poim = ax[1][0].imshow(icl, norm = ImageNormalize( icl, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
-        poim = ax[0][1].imshow(im_unclass, norm = ImageNormalize( im_unclass, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
-        poim = ax[1][1].imshow(im_art, norm = ImageNormalize( im_unclass, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
+        poim = ax[0][1].imshow(im_unclass, norm = ImageNormalize( recim, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
+        poim = ax[1][1].imshow(recim, norm = ImageNormalize( recim, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
 
         #plt.show()
         plt.tight_layout()
@@ -181,7 +183,7 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
 
     else:
 
-        return icl, gal, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, [ np.nan ]
+        return icl, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, [ np.nan ]
 
 
 
