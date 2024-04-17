@@ -10,6 +10,7 @@ import glob as glob
 import dawis as d
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from astropy.io import fits
 from astropy.visualization import *
 from scipy.stats import kurtosis
@@ -57,7 +58,7 @@ def read_image_atoms( nfp, filter_it = None, verbose = False ):
     return tol, titl
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_sep_bcg, size_sep, size_sep_pix, xs, ys, n_levels, mscicl, mscbcg, R, N_err, per_err, kurt_filt = True, plot_vignet = False, write_fits = True, measure_PR = False ):
+def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_sep_bcg, size_sep, size_sep_pix, xs, ys, n_levels, mscicl, mscbcg, N_err, per_err, kurt_filt = True, plot_vignet = False, write_fits = True, measure_PR = False ):
     '''Wavelet Separation + Spatial filtering.
     ICL --> Atoms with z > lvl_sep, with maximum coordinates within ellipse mask 'mscell' and with size > size_sep_pix.
     Galaxies --> Satellites + BCG, so a bit complicated:
@@ -101,7 +102,7 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
             continue
 
         # ICL + BCG
-        if mscicl[xco, yco] != 1:
+        if mscicl[xco, yco] == 1:
 
             # BCG
             if mscbcg[xco, yco] == 1:
@@ -128,7 +129,7 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
 
         # write to fits
         hduo = fits.PrimaryHDU(icl)
-        hduo.writeto( nfap + 'synth.icl.bcgwavsizesepmask_%03d_%03d.fits'%(lvl_sep, size_sep), overwrite = True )
+        hduo.writeto( nfap + '.synth.icl.bcgwavsizesepmask_%03d_%03d.fits'%(lvl_sep, size_sep), overwrite = True )
 
     # Plot vignets
     if plot_vignet == True:
@@ -142,8 +143,8 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
 
         #plt.show()
         plt.tight_layout()
-        plt.savefig( nfp + 'results.bcgwavsizesepmask_%03d_%03d.png'%(lvl_sep, size_sep), format = 'png' )
-        print('Write vignet to' + nfp + 'synth.bcgwavsizesepmask_%03d_%03d_testspur.png'%(lvl_sep, size_sep))
+        plt.savefig( nfap + 'results.bcgwavsizesepmask_%03d_%03d.png'%(lvl_sep, size_sep), format = 'png' )
+        print('Write vignet to' + nfap + 'synth.bcgwavsizesepmask_%03d_%03d_testspur.png'%(lvl_sep, size_sep))
         plt.close('all')
 
     if measure_PR == True:
@@ -216,7 +217,7 @@ if __name__ == '__main__':
         
         synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_sep_bcg,
                                            size_sep, size_sep_pix, xs, ys,
-                                           n_levels, mscicl, mscbcg,
+                                           n_lvl, mscicl, mscbcg,
                                            N_err = 0,
                                            per_err = 0,
                                            kurt_filt = True,

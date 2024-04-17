@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=jwst
+#SBATCH --job-name=euclid_icl
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
