@@ -69,7 +69,7 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
     '''
     # path, list & variables
     icl = np.zeros( (xs, ys) )
-    icl_err = np.zeros( (xs, ys) )
+    im_art = np.zeros( (xs, ys) )
     recim = np.zeros( (xs, ys) )
     im_unclass = np.zeros( (xs, ys) )
 
@@ -142,7 +142,7 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
 
         interval = AsymmetricPercentileInterval(5, 99.5) # meilleur rendu que MinMax or ZScale pour images reconstruites
         fig, ax = plt.subplots(2, 2)
-        poim = ax[0][0].imshow(icl_err, norm = ImageNormalize( icl_err, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
+        poim = ax[0][0].imshow(im_art, norm = ImageNormalize( im_art, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
         poim = ax[1][0].imshow(icl, norm = ImageNormalize( icl, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
         poim = ax[0][1].imshow(im_unclass, norm = ImageNormalize( recim, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
         poim = ax[1][1].imshow(recim, norm = ImageNormalize( recim, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')

@@ -21,9 +21,9 @@ starting_level = 2 # Starting wavelet scale (this is the third scale - Python co
 n_levels = 10    # Number of wavelet scales
 min_span = 1    # Minimum of wavelet scales spanned by an interscale tree (must be >= 1)
 max_span = 2    # Maximum number of wavelet scales spanned by an interscale tree
-deblend_contrast = 0.1
+deblend_contrast = 0.001
 lvl_deblend = 3 # Scale at which the regions of significant wavelet coefficients are deblended
-lvl_sep_big = 5     # Scale at wich mix_span, max_span & gamma are set to 1, and monomodality is enforced
+lvl_sep_big = 5     # Scale at wich mix_span, max_span & gamma are set to 1
 lvl_sep_op = 4  # Scale at which synthesis operator switch from SUM to ADJOINT
 rm_gamma_for_big = True # If set to true, the attenuation factor is not applied for scales higher than lvl_sep_big
 
