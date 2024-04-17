@@ -224,7 +224,7 @@ if __name__ == '__main__':
                                            write_fits = True,
                                            measure_PR = False )
         
-    df = pd.DataFrame([])        
+    df = pd.DataFrame([])
     for z in [ '0.3', '0.6', '0.9', '1.2', '1.5', '1.8' ]:
         kpc_DA = cosmo_calc(['cosmo_calc.py',str(z),str(H0),str(Om_M),str(Om_Lam)])
         col = []
