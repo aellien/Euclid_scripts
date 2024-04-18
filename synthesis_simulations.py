@@ -292,12 +292,9 @@ if __name__ == '__main__':
     col_num_vignet = []
     
     for nfp in glob.glob(os.path.join(path_data, '360009933000018/EUC_NIR_W-STK-IMAGE_H_z_*_fICL*_re_*_galsim_swarp_grid_bgsub_vignet_1.fits' )):
-        
-        print(nfp)
-        
+                
         nf = nfp.split('/')[-1]
         split = nf.split('_')
-        print('nf', nf)
         
         cluster_name = nfp.split('/')[-2]
         fICL = split[6][4:]
@@ -316,13 +313,11 @@ if __name__ == '__main__':
         
         nf = nfp.split('/')[-1][:-5]
         
-        #/n03data/ellien/Euclid_ICL/wavelets/out2/360009933000018/360009933000018_EUC_NIR_W-STK-IMAGE_H_z_0.3_fICL0.15_re_1.0_galsim_swarp_grid_bgsub_vignet_2
-        nfwp = os.path.join(path_wavelets, cluster_name, cluster_name + '_' + nf)
-        print('nfwp', nfwp)
+        #/n03data/ellien/Euclid_ICL/wavelets/out2/360009933000018/360009933000018_EUC_NIR_W-STK-IMAGE_H_z_0.3_fICL0.15_re_1.0_galsim_swarp_grid_bgsub_vignet_2/
+        nfwp = os.path.join(path_wavelets, cluster_name, cluster_name + '_' + nf, nf)
         
         # /n03data/ellien/Euclid_ICL/analysis/out2/373000139000019
         nfap = os.path.join(path_analysis, cluster_name, nf)
-        print('nfap', nfap)
 
         ficl, tot_err_up, tot_err_low = synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_sep_bcg,
                                            size_sep, size_sep_pix, xs, ys,
@@ -353,4 +348,5 @@ if __name__ == '__main__':
     df['ICL_flux_err_hi'] = col_tot_err_up
     df['ICL_flux_err_low'] = col_tot_err_low
  
+    print('Write results to %s' %os.path.join(path_analysis, 'Euclid_simulations_icl_fluxes_v0.csv'))
     df.to_csv(os.path.join(path_analysis, 'Euclid_simulations_icl_fluxes_v0.csv'))

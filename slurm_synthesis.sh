@@ -10,6 +10,6 @@
 source /home/ellien/.bashrc
 conda activate dawis
 
-python -W"ignore" /home/ellien/Euclid_ICL/Euclid_scripts/synthesis_simulations.py
+python /home/ellien/Euclid_ICL/Euclid_scripts/synthesis_simulations.py
 
 exit 0
