@@ -232,7 +232,7 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
         plt.tight_layout()
         
         plt.savefig( nfap + '.results.bcgwavsizesepmask_%03d_%03d.png'%(lvl_sep, size_sep), format = 'png' )
-        print('Write vignet to' + nfap + 'synth.bcgwavsizesepmask_%03d_%03d_testspur.png'%(lvl_sep, size_sep))
+        print('Write vignet to' + nfap + 'synth.bcgwavsizesepmask_%03d_%03d.png'%(lvl_sep, size_sep))
         plt.close('all')
     
     return icl_flux, tot_err_up, tot_err_low
@@ -312,8 +312,12 @@ if __name__ == '__main__':
         mscann = make_annuli_mask(z, H0, Om_M, Om_Lam, xs, ys, xc, yc, pix_scale)
         
         nf = nfp.split('/')[-1][:-5]
-        nfwp = os.path.join(path_wavelets, nf)
-        nfap = os.path.join(path_analysis, nf)
+        
+        #/n03data/ellien/Euclid_ICL/wavelets/out2/360009933000018/360009933000018_EUC_NIR_W-STK-IMAGE_H_z_0.3_fICL0.15_re_1.0_galsim_swarp_grid_bgsub_vignet_2
+        nfwp = os.path.join(path_wavelets, cluster_name, cluster_name + '_' + nf)
+        
+        # /n03data/ellien/Euclid_ICL/analysis/out2/373000139000019
+        nfap = os.path.join(path_analysis, cluster_name, nf)
 
         ficl, tot_err_up, tot_err_low = synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_sep_bcg,
                                            size_sep, size_sep_pix, xs, ys,
