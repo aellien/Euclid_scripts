@@ -12,7 +12,7 @@ sbatch <<EOT
 source /home/ellien/.bashrc
 conda activate dawis
 
-python -W"ignore" /home/ellien/Euclid_ICL/Euclid_ICL_scripts/dawis_NIR.py $1 $2 $3
+python -W"ignore" /home/ellien/Euclid_ICL/Euclid_scripts/dawis_NIR.py $1 $2 $3
 
 exit 0
 EOT

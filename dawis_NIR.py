@@ -35,7 +35,7 @@ n_sigmas = 5 # Threshold for detection
 inpaint_res = True # If set to true high negative value residual will be inpainted by noise
 iptd_sigma = 5  # Threshold for noise inpainted values
 
-data_dump = True    # Write data at each iteration /!\ demands lot of space on hardware /!\
+data_dump = False    # Write data at each iteration /!\ demands lot of space on hardware /!\
 gif = True      # Make gifs of the run (need data_dump = True)
 conditions = 'prolongation' # Border conditions for wavelet convolution
 

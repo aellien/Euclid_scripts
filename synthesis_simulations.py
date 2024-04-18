@@ -58,7 +58,57 @@ def read_image_atoms( nfp, filter_it = None, verbose = False ):
     return tol, titl
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_sep_bcg, size_sep, size_sep_pix, xs, ys, n_levels, mscicl, mscbcg, N_err, per_err, kurt_filt = True, plot_vignet = False, write_fits = True, measure_PR = False ):
+def selection_error(atom_in_list, atom_out_list, M, percent, xs, ys, mscann):
+    '''Computation of classification error on flux.
+    '''
+    # Output array
+    sed_sample = []
+
+    # Sample
+    size_sample = np.random.uniform(low = int( len(atom_in_list) * (1. - percent)), \
+                               high = int( len(atom_in_list) + len(atom_in_list) * percent ), \
+                               size = M).astype(int)
+    replace_sample = []
+    for s in size_sample:
+        replace_sample.append(int(np.random.uniform(low = 0, high = int( s * percent ))))
+    replace_sample = np.array(replace_sample)
+
+    flux_sample = []
+    for s, r in zip(size_sample, replace_sample):
+
+        im_s = np.zeros((xs, ys))
+        if s < len(atom_in_list):
+            flux = 0
+            draw = random.sample(atom_in_list, s)
+
+        if s >= len(atom_in_list):
+            flux = 0
+            draw1 = random.sample(atom_in_list, len(atom_in_list) - r)
+            draw2 = random.sample(atom_out_list, s - len(atom_in_list) + r)
+            draw = draw1 + draw2
+
+        for (o, xco, yco) in draw:
+            x_min, y_min, x_max, y_max = o.bbox
+            
+            im_s[ x_min : x_max, y_min : y_max ] += o.image
+            #flux += np.sum(o.image)
+
+        flux = np.sum(im_s[mscann.astype(bool)])
+        flux_sample.append(flux)
+
+    flux_sample = np.array(flux_sample)
+    mean_flux = np.median(flux_sample)
+    up_err = np.percentile(flux_sample, 95)
+    low_err = np.percentile(flux_sample, 5)
+
+    #plt.figure()
+    #plt.hist(flux_sample, bins = 10)
+    #plt.show()
+
+    return flux_sample, mean_flux, low_err, up_err, out_sed
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_sep_bcg, size_sep, size_sep_pix, xs, ys, n_levels, mscicl, mscbcg, mscann, N_err, per_err, kurt_filt = True, plot_vignet = False, write_fits = True, measure_flux = False ):
     '''Wavelet Separation + Spatial filtering.
     ICL --> Atoms with z > lvl_sep, with maximum coordinates within ellipse mask 'mscell' and with size > size_sep_pix.
     Galaxies --> Satellites + BCG, so a bit complicated:
@@ -69,6 +119,7 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
     '''
     # path, list & variables
     icl = np.zeros( (xs, ys) )
+    icl_det_err = np.zeros( (xs, ys) )
     im_art = np.zeros( (xs, ys) )
     recim = np.zeros( (xs, ys) )
     im_unclass = np.zeros( (xs, ys) )
@@ -137,55 +188,49 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
         hduo = fits.PrimaryHDU(icl)
         hduo.writeto( nfap + '.synth.icl.bcgwavsizesepmask_%03d_%03d.fits'%(lvl_sep, size_sep), overwrite = True )
 
+    # Measure Fractions and uncertainties
+    flux_sample, F_ICL_m, F_ICL_low, F_ICL_up =  selection_error(icl_al, unclass_al, M = N_err, percent = per_err, xs = xs, ys = ys, mscann = mscann)
+
+    print('\nWS + SF + SS -- ICL+BCG -- z = %d    sise_sep = %d'%(lvl_sep, size_sep))
+    print('N = %4d   F_ICL = %f ADU  err_low = %f ADU  err_up = %f ADU'%(len(icl_al), F_ICL_m, F_ICL_low, F_ICL_up))
+        
     # Plot vignets
     if plot_vignet == True:
 
         interval = AsymmetricPercentileInterval(5, 99.5) # meilleur rendu que MinMax or ZScale pour images reconstruites
-        fig, ax = plt.subplots(2, 2)
+        fig, ax = plt.subplots(2, 3)
         poim = ax[0][0].imshow(im_art, norm = ImageNormalize( im_art, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
         poim = ax[1][0].imshow(icl, norm = ImageNormalize( icl, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
         poim = ax[0][1].imshow(im_unclass, norm = ImageNormalize( recim, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
         poim = ax[1][1].imshow(recim, norm = ImageNormalize( recim, interval = interval, stretch = LogStretch()), cmap = 'binary', origin = 'lower')
-
+        
+        
         #plt.show()
         plt.tight_layout()
         plt.savefig( nfap + '.results.bcgwavsizesepmask_%03d_%03d.png'%(lvl_sep, size_sep), format = 'png' )
         print('Write vignet to' + nfap + 'synth.bcgwavsizesepmask_%03d_%03d_testspur.png'%(lvl_sep, size_sep))
         plt.close('all')
-
-    if measure_PR == True:
-
-        # Measure Fractions and uncertainties
-        F_ICL_m, F_ICL_low, F_ICL_up, out_sed =  selection_error(icl_al, unclass_al, M = N_err, percent = per_err, lvl_sep_big = lvl_sep_big, gamma = gamma, xs = xs, ys = ys, flux_lim = flux_lim, mscsedl = mscsedl)
-        F_gal_m, F_gal_low, F_gal_up,_ =  selection_error(gal_al, unclass_al, M = N_err, percent = per_err, lvl_sep_big = lvl_sep_big, gamma = gamma, xs = xs, ys = ys, flux_lim = flux_lim, mscsedl = mscsedl)
-        f_ICL_m = F_ICL_m / (F_ICL_m + F_gal_m)
-        f_ICL_low = F_ICL_low / (F_ICL_low + F_gal_up)
-        f_ICL_up = F_ICL_up / (F_ICL_up + F_gal_low)
-
-        print('\nWS + SF + SS -- ICL+BCG -- z = %d    sise_sep = %d'%(lvl_sep, size_sep))
-        print('N = %4d   F_ICL = %f Mjy/sr  err_low = %f Mjy/sr  err_up = %f Mjy/sr'%(len(icl_al), F_ICL_m, F_ICL_low, F_ICL_up))
-        print('N = %4d   F_gal = %f Mjy/sr  err_low = %f Mjy/sr  err_up = %f Mjy/sr'%(len(gal_al), F_gal_m, F_gal_low, F_gal_up))
-        print('f_ICL = %1.3f    f_ICL_low = %1.3f   f_ICL_up = %1.3f'%(f_ICL_m, f_ICL_low, f_ICL_up))
-
-        # Measure Power ratio
-        results_PR = PR_with_selection_error(atom_in_list = icl_al, atom_out_list = unclass_al, M = N_err, percent = per_err, lvl_sep_big = lvl_sep_big, gamma = gamma, R = R, xs = xs, ys = ys)
-        PR_1_m, PR_1_up, PR_1_low = results_PR[0]
-        PR_2_m, PR_2_up, PR_2_low = results_PR[1]
-        PR_3_m, PR_3_up, PR_3_low = results_PR[2]
-        PR_4_m, PR_4_up, PR_4_low = results_PR[3]
-
-        print('PR_1_m = %1.2e    PR_1_low = %1.2e    PR_1_up = %1.2e'%(PR_1_m, PR_1_low, PR_1_up))
-        print('PR_2_m = %1.2e    PR_2_low = %1.2e    PR_2_up = %1.2e'%(PR_2_m, PR_2_low, PR_2_up))
-        print('PR_3_m = %1.2e    PR_3_low = %1.2e    PR_3_up = %1.2e'%(PR_3_m, PR_3_low, PR_3_up))
-        print('PR_4_m = %1.2e    PR_4_low = %1.2e    PR_4_up = %1.2e'%(PR_4_m, PR_4_low, PR_4_up))
-
-        return icl, gal, F_ICL_m, F_ICL_low, F_ICL_up, F_gal_m, F_gal_low, F_gal_up, f_ICL_m, f_ICL_low, f_ICL_up, PR_1_m, PR_1_up, PR_1_low, PR_2_m, PR_2_up, PR_2_low, PR_3_m, PR_3_up, PR_3_low, PR_4_m, PR_4_up, PR_4_low, out_sed
-
-    else:
-
-        return icl, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, [ np.nan ]
+    
+    return icl, F_ICL_m, F_ICL_low, F_ICL_up
 
 
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+def make_annuli_mask(z, H0, Om_M, Om_Lam,  xs, ys, xc, yc, pix_scale):
+
+    kpc_DA = cosmo_calc(['cosmo_calc.py', str(z), str(H0), str(Om_M), str(Om_Lam)]) # kpc/arcsec
+    r50 = 50 / kpc_DA / pix_scale
+    r200 = 200 / kpc_DA / pix_scale
+    
+    mask = np.ones((xs, ys))
+
+    Y, X = np.ogrid[:xs, :ys]
+    dist_from_center = np.sqrt((X - xc)**2 + (Y-yc)**2)
+
+    mask[dist_from_center < r50] = 0.
+    mask[dist_from_center > r200] = 0.
+    
+    return mask   
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if __name__ == '__main__':
@@ -203,6 +248,10 @@ if __name__ == '__main__':
     size_sep_pix = 10 # pix
     size_sep = size_sep_pix # NOT kpc for now
     
+    N_err = 100
+    per_err = 0.1
+    
+    pix_scale = 0.3 # arcsec/pix
     H0 = 70.0 # Hubble constant
     Om_M = 0.3 # Matter density
     Om_Lam = 0.7 # Energy density
@@ -211,25 +260,31 @@ if __name__ == '__main__':
     mscbcg = fits.getdata('/n03data/ellien/Euclid_ICL/simulations/out2/mscbcg.fits')
     
     for nfp in glob.glob( os.path.join(path_data, '*.fits') ):
-                
+        
         hdu = fits.open(nfp)
         head = hdu[0].header
         oim = hdu[0].data
         
         xs, ys = oim.shape        
+        # get redshift in file name:
+        # EUC_NIR_W-STK-IMAGE_H_z_0.9_fICL0.15_re_1.0_galsim_swarp_grid_bgsub_vignet_?.fits
+        #                         ^  ^
+        z = os.path.basename(nfp)[24:27]
+        mscann = make_annuli_mask(z, H0, Om_M, Om_Lam,  xs, ys, xc, yc, pix_scale)
+        
         nf = nfp.split('/')[-1][:-5]
         nfwp = os.path.join(path_wavelets, nf)
         nfap = os.path.join(path_analysis, nf)
         
         synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_sep_bcg,
                                            size_sep, size_sep_pix, xs, ys,
-                                           n_lvl, mscicl, mscbcg,
+                                           n_lvl, mscicl, mscbcg, mscann,
                                            N_err = 0,
                                            per_err = 0,
                                            kurt_filt = True,
                                            plot_vignet = True,
                                            write_fits = True,
-                                           measure_PR = False )
+                                           measure_flux = True )
         
     df = pd.DataFrame([])
     for z in [ '0.3', '0.6', '0.9', '1.2', '1.5', '1.8' ]:
