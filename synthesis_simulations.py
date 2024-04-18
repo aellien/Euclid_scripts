@@ -291,7 +291,7 @@ if __name__ == '__main__':
     col_cl_name = []
     col_num_vignet = []
     
-    for nfp in glob.glob(os.path.join(path_data, '360009933000018/EUC_NIR_W-STK-IMAGE_H_z_*_fICL*_re_*_galsim_swarp_grid_bgsub_vignet_1.fits' )):
+    for nfp in glob.glob(os.path.join(path_data, '/*/EUC_NIR_W-STK-IMAGE_H_z_*_fICL*_re_*_galsim_swarp_grid_bgsub_vignet_?.fits' )):
                 
         nf = nfp.split('/')[-1]
         split = nf.split('_')
