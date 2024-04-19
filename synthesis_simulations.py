@@ -10,6 +10,7 @@ import glob as glob
 import dawis as d
 import numpy as np
 import pandas as pd
+import gc
 import random
 import matplotlib.pyplot as plt
 from astropy.io import fits
@@ -136,6 +137,7 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
 
     # Read atoms
     ol, itl = read_image_atoms( nfwp, verbose = True )
+    gc.collect()
 
     # Kurtosis + ICL+BCG
     for j, o in enumerate(ol):
@@ -291,7 +293,7 @@ if __name__ == '__main__':
     col_cl_name = []
     col_num_vignet = []
     
-    for nfp in glob.glob(os.path.join(path_data, '/*/EUC_NIR_W-STK-IMAGE_H_z_*_fICL*_re_*_galsim_swarp_grid_bgsub_vignet_?.fits' )):
+    for nfp in glob.glob(os.path.join(path_data, '3*/EUC_NIR_W-STK-IMAGE_H_z_*_fICL*_re_*_galsim_swarp_grid_bgsub_vignet_?.fits' )):
                 
         nf = nfp.split('/')[-1]
         split = nf.split('_')
