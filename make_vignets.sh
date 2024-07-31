@@ -1,10 +1,11 @@
 #!/bin/bash
 # Crop image (hand made with box region)
 
-path_simulations=/home/aellien/Euclid_ICL/simulations/out2/
+path_simulations=/home/aellien/Euclid_ICL/simulations/out3/
 path_scripts=/home/aellien/Euclid_ICL/Euclid_scripts
 
-for cluster_num in 365000132000018 360009933000018 373000139000019
+#  365000132000018
+for cluster_num in 360009933000018 373000139000019
 do
     cd ${path_simulations}${cluster_num}/vignets
     for full_mosaic in ${path_simulations}${cluster_num}/EUC_NIR_W-STK-IMAGE_H_z_*

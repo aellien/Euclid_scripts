@@ -10,7 +10,6 @@ import glob as glob
 import dawis as d
 import numpy as np
 import pandas as pd
-import gc
 import random
 import matplotlib.pyplot as plt
 from astropy.io import fits
@@ -19,7 +18,7 @@ from scipy.stats import kurtosis
 from cosmo_calc import cosmo_calc
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-def read_image_atoms( nfp, filter_it = None, verbose = False ):
+'''def read_image_atoms( nfp, filter_it = None, verbose = False ):
 
     # Object lists
     if filter_it == None:
@@ -58,7 +57,7 @@ def read_image_atoms( nfp, filter_it = None, verbose = False ):
             titl.append(itl[j])
 
     return tol, titl
-
+'''
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 def selection_error(atom_in_list, atom_out_list, M, percent, xs, ys, mscann):
     '''Computation of classification error on flux.
@@ -136,8 +135,7 @@ def synthesis_bcgwavsizesep_with_masks( nfwp, nfap, lvl_sep, lvl_sep_max, lvl_se
     wrl = [] # reconstruction error list
 
     # Read atoms
-    ol, itl = read_image_atoms( nfwp, verbose = True )
-    gc.collect()
+    ol, itl = d.read_image_atoms( nfwp, file_format = 'pkl', verbose = True )
 
     # Kurtosis + ICL+BCG
     for j, o in enumerate(ol):
@@ -350,5 +348,5 @@ if __name__ == '__main__':
     df['ICL_flux_err_hi'] = col_tot_err_up
     df['ICL_flux_err_low'] = col_tot_err_low
  
-    print('Write results to %s' %os.path.join(path_analysis, 'Euclid_simulations_icl_fluxes_v0.csv'))
-    df.to_csv(os.path.join(path_analysis, 'Euclid_simulations_icl_fluxes_v0.csv'))
+    print('Write results to %s' %os.path.join(path_analysis, 'Euclid_simulations_icl_fluxes_v0_fix.csv'))
+    df.to_csv(os.path.join(path_analysis, 'Euclid_simulations_icl_fluxes_v0_fix.csv'))
